@@ -9,7 +9,7 @@ Original file is located at
 
 import pandas as pd
 import numpy as np
-
+import joblib
 from sklearn.model_selection import train_test_split,GridSearchCV,cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
@@ -18,22 +18,32 @@ from sklearn.metrics import root_mean_squared_error,r2_score
 
 from preprocessing import create_preprocessor
 
-#Dataset Shape
+#  Load Dataset
 
-df = pd.read_csv('train.csv')
-print('Dataset Shape',df.shape)
+
+df = pd.read_csv("train.csv")
+
+print("Dataset Shape:", df.shape)
 
 #  Split Features and Target
 
-X = df.drop('total_amount',axis=1)
-y = df['total_amount']
+X = df.drop("total_amount", axis=1)
+y = df["total_amount"]
 
 #  Train-Test Split
-X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
 
 #  Create Preprocessing Pipeline
 
 preprocessor = create_preprocessor()
+
+#  Baseline Model (Linear Regression)
 
 baseline_pipeline = Pipeline([
     ("preprocessor", preprocessor),
@@ -52,6 +62,63 @@ print("RMSE:", rmse_baseline)
 print("R2 Score:", r2_baseline)
 
 #  Random Forest Model
-rf_pipelien = Pipeline([('preprocessor',preprocessor),
-                        'model',RandomForestRegressor])
+
+rf_pipeline = Pipeline([
+    ("preprocessor", preprocessor),
+    ("model", RandomForestRegressor(random_state=42))
+])
+
+#  Hyperparameter Tuning
+
+param_grid = {
+    "model__n_estimators": [100],
+    "model__max_depth": [10],
+    "model__min_samples_split": [2]
+}
+
+grid_search = GridSearchCV(
+    rf_pipeline,
+    param_grid,
+    cv=5,
+    scoring="neg_root_mean_squared_error",
+    n_jobs=1
+)
+
+print("\nTraining Random Forest with GridSearch...")
+
+grid_search.fit(X_train, y_train)
+
+best_model = grid_search.best_estimator_
+
+print("\nBest Parameters:", grid_search.best_params_)
+
+#  Evaluate Tuned Model
+
+y_pred_rf = best_model.predict(X_test)
+
+rmse_rf = root_mean_squared_error(y_test, y_pred_rf)
+r2_rf = r2_score(y_test, y_pred_rf)
+
+print("\n===== Tuned Random Forest Model =====")
+print("RMSE:", rmse_rf)
+print("R2 Score:", r2_rf)
+
+#  Cross Validation
+
+
+cv_scores = cross_val_score(
+    best_model,
+    X_train,
+    y_train,
+    cv=5,
+    scoring="neg_root_mean_squared_error"
+)
+
+print("Cross Validation RMSE:", -cv_scores.mean())
+
+# Save Full Pipeline
+
+joblib.dump(best_model, "model.pkl")
+
+print("\nModel saved successfully as model.pkl")
 
