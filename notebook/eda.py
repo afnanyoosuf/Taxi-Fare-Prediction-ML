@@ -24,7 +24,7 @@ print("Dataset Shape:", df.shape)
 print("\nFirst 5 rows:")
 print(df.head())
 
-# 3 Dataset Information
+#  Dataset Information
 
 print("\nDataset Info")
 df.info()
@@ -32,7 +32,7 @@ df.info()
 print("\nStatistical Summary")
 print(df.describe())
 
-# 4 Check Missing Values
+#  Check Missing Values
 
 missing = df.isnull().sum().sort_values(ascending=False)
 missing_percent = (df.isnull().sum() / len(df)) * 100
@@ -43,7 +43,15 @@ print(missing)
 print("\nMissing Values Percentage")
 print(missing_percent.sort_values(ascending=False))
 
-# 5 Remove Negative Fare Values
+#  Check Duplicate Rows
+print("\nDuplicate Rows:", df.duplicated().sum())
+
+# Remove duplicates if any
+#df = df.drop_duplicates()
+
+#print("Shape After Removing Duplicates:", df.shape)
+
+#  Remove Negative Fare Values
 
 
 print("\nNegative total_amount rows:",

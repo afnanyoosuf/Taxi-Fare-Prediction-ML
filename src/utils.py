@@ -21,10 +21,10 @@ def load_data(path):
   return df
 
 #  Split Features and Target
-def split_features_target(df,target = 'total_amount'):
+def split_features_target(df):
 
-  X = df.drop(columns = ['target'])
-  y = df[target]
+  X = df.drop(columns = ['total_amount'])
+  y = df['total_amount']
 
   return X,y
 
@@ -54,3 +54,4 @@ def load_model(filename ='model.pkl'):
   print("Model loaded successfully")
 
   return model
+
