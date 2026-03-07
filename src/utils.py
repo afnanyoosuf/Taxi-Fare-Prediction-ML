@@ -20,13 +20,12 @@ def load_data(path):
 
   return df
 
-#  Split Features and Target
-def split_features_target(df):
+def split_features_target(df, target="total_amount"):
 
-  X = df.drop(columns = ['total_amount'])
-  y = df['total_amount']
+    X = df.drop(columns=[target])
+    y = df[target]
 
-  return X,y
+    return X, y
 
 #  Evaluate Model
 def evaluate_model(y_true,y_pred):
