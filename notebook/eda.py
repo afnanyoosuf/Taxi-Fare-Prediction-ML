@@ -46,10 +46,9 @@ print(missing_percent.sort_values(ascending=False))
 #  Check Duplicate Rows
 print("\nDuplicate Rows:", df.duplicated().sum())
 
-# Remove duplicates if any
-#df = df.drop_duplicates()
+df = df.drop_duplicates()
 
-#print("Shape After Removing Duplicates:", df.shape)
+print("Shape After Removing Duplicates:", df.shape)
 
 #  Remove Negative Fare Values
 
@@ -126,15 +125,30 @@ plt.figure()
 sns.scatterplot(x=df['trip_duration'],y=df['total_amount'])
 plt.title('Trip Duration vs Total Amount')
 
-# 13 EDA Insights
+# 13. Feature Impact on Target
+
+corr_target = df.corr(numeric_only=True)["total_amount"].sort_values(ascending=False)
+
+print("\nCorrelation with total_amount")
+print(corr_target)
+
+# 14. Identify Low Impact Features
+
+low_impact = corr_target[abs(corr_target) < 0.05]
+
+print("\nLow Impact Features (Possible removal)")
+print(low_impact)
 
 print("""
+
 EDA INSIGHTS
 
 1. Trip distance has a strong positive relationship with total_amount.
-2. Longer trip duration generally results in higher taxi fares.
-3. Some outliers exist in trip_distance and total_amount.
+2. Trip duration also strongly influences taxi fare.
+3. Tip amount and extra charges contribute to final fare.
 4. Most taxi trips are short distance rides.
-5. Time features like pickup_hour may influence demand and fare patterns.
+5. Some features such as VendorID or store_and_fwd_flag may have low impact.
+6. Time based features (pickup_hour, pickup_day) can influence taxi demand.
+
 """)
 

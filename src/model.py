@@ -12,8 +12,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 
-from preprocessing import create_preprocessor
-from utils import load_data, split_features_target, evaluate_model, save_model
+from src.preprocessing import create_preprocessor
+from src.utils import load_data, split_features_target, evaluate_model, save_model
 
 #  Load Dataset
 
