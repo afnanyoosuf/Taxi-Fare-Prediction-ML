@@ -2,9 +2,9 @@
 
  Project Overview
 
-This project aims to build a machine learning model that predicts the **total taxi fare (`total_amount`)** for a taxi trip. The prediction is based on several trip-related features such as trip distance, passenger count, pickup time, and location information.
+This project aims to build a machine learning model that predicts the **total taxi fare total_amount for a taxi trip. The prediction is based on several trip-related features such as trip distance, passenger count, pickup time.
 
-The project demonstrates a complete **end-to-end machine learning workflow**, including data exploration, preprocessing, model training, evaluation, and saving the trained model for future predictions.
+The project demonstrates a complete end-to-end machine learning workflow, including data exploration, preprocessing, model training, evaluation, and saving the trained model for future predictions.
 
 
  Dataset Description
