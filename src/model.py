@@ -7,41 +7,32 @@ Original file is located at
     https://colab.research.google.com/drive/1qTQl6Tz1P7NLnwMCYmiISMZcB5kREugn
 """
 
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score,RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 
-from src.preprocessing import create_preprocessor
-from src.utils import load_data, split_features_target, evaluate_model, save_model
+from preprocessing import create_preprocessor
+from utils import load_data, split_features_target, evaluate_model, save_model
 
-#  Load Dataset
-
-
-#df = pd.read_csv("train.csv")
-
-#print("Dataset Shape:", df.shape)
+# Load Dataset
+# ============================================
 
 df = load_data("train.csv")
 
 #  Clean Target Variable
+# ============================================
 
 # remove negative taxi fares
 df = df[df["total_amount"] >= 0]
 
-df.columns
-
 #  Split Features and Target
-
-#X = df.drop("total_amount", axis=1)
-#y = df["total_amount"]
-
+# ============================================
 
 X, y = split_features_target(df)
 
-y.name
-
 #  Train-Test Split
+# ============================================
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -51,10 +42,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 #  Create Preprocessing Pipeline
+# ============================================
 
 preprocessor = create_preprocessor()
 
 #  Baseline Model (Linear Regression)
+# ============================================
 
 baseline_pipeline = Pipeline([
     ("preprocessor", preprocessor),
@@ -65,22 +58,21 @@ baseline_pipeline.fit(X_train, y_train)
 
 y_pred_baseline = baseline_pipeline.predict(X_test)
 
-#rmse_baseline = root_mean_squared_error(y_test, y_pred_baseline)
-#r2_baseline = r2_score(y_test, y_pred_baseline)
-
 print("\n===== Baseline Model (Linear Regression) =====")
-#print("RMSE:", rmse_baseline)
-#print("R2 Score:", r2_baseline)
+
 evaluate_model(y_test, y_pred_baseline)
 
-#  Random Forest Model
+# Random Forest Model
+# ============================================
 
 rf_pipeline = Pipeline([
     ("preprocessor", preprocessor),
     ("model", RandomForestRegressor(random_state=42))
 ])
 
+# ============================================
 #  Hyperparameter Tuning
+# ============================================
 
 param_grid = {
     "model__n_estimators": [100],
@@ -104,15 +96,17 @@ best_model = grid_search.best_estimator_
 
 print("\nBest Parameters:", grid_search.best_params_)
 
-#  Evaluate Tuned Model
+#  Evaluate Random Forest Model
+# ============================================
 
 y_pred_rf = best_model.predict(X_test)
 
-print("\nRandom Forest Model Performance")
+print("\n===== Random Forest Model Performance =====")
+
 evaluate_model(y_test, y_pred_rf)
 
 #  Cross Validation
-
+# ============================================
 
 cv_scores = cross_val_score(
     best_model,
@@ -124,7 +118,8 @@ cv_scores = cross_val_score(
 
 print("\nCross Validation RMSE:", -cv_scores.mean())
 
-# Save Full Pipeline
+#  Save Model
+# ============================================
 
 save_model(best_model)
 

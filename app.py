@@ -1,6 +1,4 @@
 
-# Taxi Fare Prediction - Streamlit App
-
 import streamlit as st
 import pandas as pd
 import joblib
@@ -61,15 +59,6 @@ tolls_amount = st.number_input(
     "Tolls Amount",
     value=0.0
 )
-congestion_surcharge = st.number_input(
-    "Congestion Surcharge",
-    value=0.0
-)
-
-Airport_fee = st.number_input(
-    "Airport Fee",
-    value=0.0
-)
 
 
 # Create Input Data
@@ -83,10 +72,9 @@ input_data = pd.DataFrame({
     "payment_type": [payment_type],
     "extra": [extra],
     "tip_amount": [tip_amount],
-    "tolls_amount": [tolls_amount],
-    "congestion_surcharge": [congestion_surcharge],
-    "Airport_fee": [Airport_fee]
+    "tolls_amount": [tolls_amount]
 })
+
 
 # Prediction
 

@@ -19,82 +19,131 @@ from sklearn.base import BaseEstimator,TransformerMixin
 
 #  Custom Transformer: DateTime Feature Engineering
 
+class DateTimeFeatureExtractor(BaseEstimator, TransformerMixin):
 
-class DateTimeFeatureExtractor(BaseEstimator,TransformerMixin):
-  def fit(self,X,y=None):
-    return self
+    def fit(self, X, y=None):
+        return self
 
-  def transform(self,X):
-    X = X.copy()
+    def transform(self, X):
 
-    X['tpep_pickup_datetime'] = pd.to_datetime(X['tpep_pickup_datetime'],errors='coerce')
-    X['tpep_dropoff_datetime'] = pd.to_datetime(X['tpep_dropoff_datetime'],errors='coerce')
+        X = X.copy()
 
-    X['trip_duration'] = (X['tpep_dropoff_datetime']-X['tpep_pickup_datetime']).dt.total_seconds()/60
+        # Convert datetime columns
+        X["tpep_pickup_datetime"] = pd.to_datetime(
+            X["tpep_pickup_datetime"],
+            errors="coerce"
+        )
 
-    X.loc[X['trip_duration']<0,'trip_duration'] = np.nan
+        X["tpep_dropoff_datetime"] = pd.to_datetime(
+            X["tpep_dropoff_datetime"],
+            errors="coerce"
+        )
 
-    X['pickup_hour'] = X['tpep_pickup_datetime'].dt.hour
-    X['pickup_day'] = X['tpep_pickup_datetime'].dt.dayofweek
-    X['pickup_month'] = X['tpep_pickup_datetime'].dt.month
+        # Create trip duration feature
+        X["trip_duration"] = (
+            X["tpep_dropoff_datetime"] -
+            X["tpep_pickup_datetime"]
+        ).dt.total_seconds() / 60
 
-    X = X.drop(columns =['tpep_pickup_datetime','tpep_dropoff_datetime'])
+        # Remove invalid trip durations
+        X.loc[X["trip_duration"] < 0, "trip_duration"] = np.nan
 
-    return X
+        # Extract time features
+        X["pickup_hour"] = X["tpep_pickup_datetime"].dt.hour
+        X["pickup_day"] = X["tpep_pickup_datetime"].dt.dayofweek
+        X["pickup_month"] = X["tpep_pickup_datetime"].dt.month
+
+
+        # Remove unnecessary columns
+        X = X.drop(columns=[
+            "tpep_pickup_datetime",
+            "tpep_dropoff_datetime",
+            "VendorID",
+            "store_and_fwd_flag",
+            "PULocationID",
+            "DOLocationID",
+            "improvement_surcharge"
+        ], errors="ignore")
+
+        return X
+
 
 #  Custom Transformer: Outlier Capper (IQR Method)
 
+class OutlierCapper(BaseEstimator, TransformerMixin):
 
-class OutlierCapper(BaseEstimator,TransformerMixin):
+    def fit(self, X, y=None):
 
-  def fit(self,X,y=None):
-    X = np.asarray(X)
-    Q1 = np.percentile(X,25,axis=0)
-    Q3 = np.percentile(X,75,axis=0)
-    IQR = Q3-Q1
+        X = np.asarray(X)
 
-    self.lower_bound_ = Q1 - 1.5 * IQR
-    self.upper_bound_ = Q3 + 1.5 * IQR
+        Q1 = np.percentile(X, 25, axis=0)
+        Q3 = np.percentile(X, 75, axis=0)
 
-    return self
+        IQR = Q3 - Q1
+
+        self.lower_bound_ = Q1 - 1.5 * IQR
+        self.upper_bound_ = Q3 + 1.5 * IQR
+
+        return self
 
 
-  def transform(self,X):
-    X = np.asarray(X)
-    X = np.clip(X,self.lower_bound_,self.upper_bound_)
+    def transform(self, X):
 
-    return X
+        X = np.asarray(X)
+
+        X = np.clip(
+            X,
+            self.lower_bound_,
+            self.upper_bound_
+        )
+
+        return X
+
 
 #  Function to Create Full Preprocessing Pipeline
 
 def create_preprocessor():
 
     # Numerical Pipeline
+
     numerical_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("outlier_capper", OutlierCapper()),
         ("scaler", StandardScaler())
     ])
 
+
     # Categorical Pipeline
+
     categorical_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
         ("encoder", OneHotEncoder(handle_unknown="ignore"))
     ])
 
+
     # Column Transformer
+
     preprocessor = ColumnTransformer([
-        ("num", numerical_pipeline,
-         make_column_selector(dtype_include=np.number)),
-        ("cat", categorical_pipeline,
-         make_column_selector(dtype_include=object))
+        (
+            "num",
+            numerical_pipeline,
+            make_column_selector(dtype_include=np.number)
+        ),
+        (
+            "cat",
+            categorical_pipeline,
+            make_column_selector(dtype_include=object)
+        )
     ])
 
+
     # Full Pipeline
+
     pipeline = Pipeline([
         ("feature_engineering", DateTimeFeatureExtractor()),
-        ("preprocessor", preprocessor)
+        ("preprocessing", preprocessor)
     ])
+
 
     return pipeline
 
